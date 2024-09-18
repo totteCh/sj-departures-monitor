@@ -1,21 +1,32 @@
 import axios from 'axios'
 import { config } from 'dotenv'
 import * as cron from 'node-cron'
+import { sendNotification } from './pushover'
 
 config()
 
-import { sendNotification } from './pushover'
+// Validate environment variables
+function validateEnvVariables() {
+  const requiredVars = [
+    'FROM_STATION',
+    'TO_STATION',
+    'DEPARTURE_DATE',
+    'PUSHOVER_USER_KEY',
+    'PUSHOVER_TOKEN',
+  ]
+  for (const variable of requiredVars) {
+    if (!process.env[variable]) {
+      console.error(`Missing required environment variable: ${variable}`)
+      process.exit(1)
+    }
+  }
+}
 
-// Search configuration
+validateEnvVariables()
+
 const fromStation = process.env.FROM_STATION
 const toStation = process.env.TO_STATION
 const departureDate = process.env.DEPARTURE_DATE
-
-if (!fromStation || !toStation || !departureDate) {
-  console.error('Invalid search configuration!')
-  process.exit(1)
-}
-
 const apiUrl = 'https://prod-api.adp.sj.se/public/sales/booking/v3'
 const subscriptionKey = 'd6625619def348d38be070027fd24ff6'
 const searchRequestBody = {
