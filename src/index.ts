@@ -1,9 +1,10 @@
 import axios from 'axios'
 import { config } from 'dotenv'
 import * as cron from 'node-cron'
-import Pushover from 'pushover-notifications'
 
 config()
+
+import { sendNotification } from './pushover'
 
 // Search configuration
 const fromStation = process.env.FROM_STATION
@@ -12,19 +13,6 @@ const departureDate = process.env.DEPARTURE_DATE
 
 if (!fromStation || !toStation || !departureDate) {
   console.error('Invalid search configuration!')
-  process.exit(1)
-}
-
-// Pushover configuration
-const pushoverUserKey = process.env.PUSHOVER_USER_KEY
-const pushoverToken = process.env.PUSHOVER_TOKEN
-const pushover = new Pushover({
-  user: pushoverUserKey,
-  token: pushoverToken,
-})
-
-if (!pushoverUserKey || !pushoverToken) {
-  console.error('Invalid Pushover configuration!')
   process.exit(1)
 }
 
@@ -39,7 +27,6 @@ const searchRequestBody = {
 
 let lastDepartureCount = 0
 
-// Function to perform the first search and get the search ID
 async function performSearch(): Promise<string | null> {
   try {
     const response = await axios.post(`${apiUrl}/search`, searchRequestBody, {
@@ -56,7 +43,6 @@ async function performSearch(): Promise<string | null> {
   }
 }
 
-// Function to perform the second search and check departures
 async function checkDepartures(searchId: string): Promise<void> {
   try {
     const response = await axios.get(
@@ -73,7 +59,10 @@ async function checkDepartures(searchId: string): Promise<void> {
 
     if (departures.length > lastDepartureCount) {
       console.log(`New departures found: ${departures.length}`)
-      sendNotification()
+      await sendNotification(
+        `New departures found for ${departureDate}.`,
+        'SJ Departures Available',
+      )
       lastDepartureCount = departures.length
     } else {
       console.log('No new departures found.')
@@ -83,36 +72,18 @@ async function checkDepartures(searchId: string): Promise<void> {
   }
 }
 
-// Function to send a Pushover notification
-function sendNotification() {
-  const message = {
-    message: `New departures found for ${departureDate}.`,
-    title: 'SJ Departures Available',
-  }
-
-  try {
-    pushover.send(message)
-    console.log('Pushover notification sent.')
-  } catch (error) {
-    console.error('Error sending Pushover notification:', error)
-  }
-}
-
 // Schedule a task to check departures every hour
 cron.schedule('0 5-20 * * *', async () => {
   console.log('Checking for new departures...')
-
   const searchId = await performSearch()
-
   if (searchId) {
     await checkDepartures(searchId)
   }
 })
 
-// Initial call to start
-;(async function () {
+// Initial call
+;(async () => {
   const searchId = await performSearch()
-
   if (searchId) {
     await checkDepartures(searchId)
   }
