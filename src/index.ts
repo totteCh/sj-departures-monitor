@@ -11,6 +11,7 @@ function validateEnvVariables() {
     'FROM_STATION',
     'TO_STATION',
     'DEPARTURE_DATE',
+    'SUBSCRIPTION_KEY',
     'PUSHOVER_USER_KEY',
     'PUSHOVER_TOKEN',
   ]
@@ -28,7 +29,9 @@ const fromStation = process.env.FROM_STATION
 const toStation = process.env.TO_STATION
 const departureDate = process.env.DEPARTURE_DATE
 const apiUrl = 'https://prod-api.adp.sj.se/public/sales/booking/v3'
-const subscriptionKey = 'd6625619def348d38be070027fd24ff6'
+const subscriptionKey = process.env.SUBSCRIPTION_KEY
+const cronSchedule = process.env.CRON_SCHEDULE || '0 5-20 * * *'
+
 const searchRequestBody = {
   origin: fromStation,
   destination: toStation,
@@ -83,8 +86,8 @@ async function checkDepartures(searchId: string): Promise<void> {
   }
 }
 
-// Schedule a task to check departures every hour
-cron.schedule('0 5-20 * * *', async () => {
+// Schedule a task to check departures
+cron.schedule(cronSchedule, async () => {
   console.log('Checking for new departures...')
   const searchId = await performSearch()
   if (searchId) {
