@@ -1,4 +1,5 @@
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
 import { config } from 'dotenv'
 import * as cron from 'node-cron'
 import { sendNotification } from './pushover'
@@ -31,6 +32,9 @@ const departureDate = process.env.DEPARTURE_DATE
 const apiUrl = 'https://prod-api.adp.sj.se/public/sales/booking/v3'
 const subscriptionKey = process.env.SUBSCRIPTION_KEY
 const cronSchedule = process.env.CRON_SCHEDULE || '0 5-20 * * *'
+
+// Apply retry logic to axios
+axiosRetry(axios, { retries: 3, retryDelay: axiosRetry.exponentialDelay })
 
 const searchRequestBody = {
   origin: fromStation,
