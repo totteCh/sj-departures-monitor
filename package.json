@@ -1,0 +1,33 @@
+{
+  "name": "sj-departures-monitor",
+  "version": "1.0.0",
+  "description": "Periodically searches for SJ departures and notifies you when new departures are added",
+  "main": "src/index.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/totteCh/sj-departures-monitor.git"
+  },
+  "keywords": [
+    "SJ"
+  ],
+  "author": "Christoffer Wigforss",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/totteCh/sj-departures-monitor/issues"
+  },
+  "homepage": "https://github.com/totteCh/sj-departures-monitor#readme",
+  "dependencies": {
+    "axios": "^1.7.7",
+    "dotenv": "^16.4.5",
+    "node-cron": "^3.0.3",
+    "pushover-notifications": "^1.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.5.5",
+    "@types/node-cron": "^3.0.11"
+  }
+}
